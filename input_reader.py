@@ -1,21 +1,24 @@
+# Author: Tanmay C. Shidhore
+
+# Header file to read the MOOSE input (<filename.i>) file
+# All outputs are either lists or list of lists
+
 import os
 import sys
-import numpy as np 
-import scipy as sp 
+#import numpy as np 
+#import scipy as sp 
 from pdb import set_trace as keyboard
 
 def read_input_file(filename):
   
-  # Code to read the MOOSE input (<filename.i>) file
-  # All outputs are either lists or list of lists
-  
   f = open(filename, 'r')
   
-  mat_prop = []
-  crack_hwidths = []
-  crack_vars = []
-  crack_funs = []
-  i = 0
+  # Initialize empty lists to store the relevant properties
+  mat_prop = [] # Stores material properties
+  crack_hwidths = [] # Stores crack half-widths for eac crack
+  crack_vars = [] # Stores the variables used to denote each crack
+  crack_funs = [] # Stores crack functions for each crack
+  i = 0 # Counter for line number
   
   reading_lines = True
 
@@ -24,6 +27,7 @@ def read_input_file(filename):
     # Read line by line, stripping the whitespace
     line = f.readline().strip()
     i += 1
+    
     #**********************************************************************#
     #                      READING MATERIAL PROPERTIES                     #
     #**********************************************************************#
@@ -71,7 +75,7 @@ def read_input_file(filename):
                 read_function = False
                 print("Line %d:Done reading crack properties"%(i))
             # Finding half-width parameters
-            # Strips the ' s at the star and end and stores it in the relevant list
+            # Strips the ' s at the start and end and stores it in the relevant list
             elif 'vals' in line:
                 crack_hwidths = ((line.strip("vals = ")).strip("'")).split(" ")
             # Finding corresponding parameters values
@@ -185,35 +189,42 @@ def extract_crack_params(cf,cv,cw):
     crack_angle_deg = []
     crack_hw = []
     crack_c = []
+    n_cracks = 0
     
     # Separate each individual crack function
     # Demarcated based on the ) for the previous function and + after that
     # assuming that such a ')+' combination wont occur anywhere except at the
     # end of a crack equation
     
-    CFs = cf[0].replace(")+",") ")
-    CFs = CFs.split(" ")
+    # Following block is added under if statement
+    # In case the given input file does not contain any initial crack
+    # Edited by Akshay Dandekar on October 18th 2018
     
-    # Number of separate equations = no. of cracks
-    n_cracks = len(CFs)
-    
-    for crack in CFs:
+    if len(cf)!=0:
+        CFs = cf[0].replace(")+",") ")
+        CFs = CFs.split(" ")
         
-        # Demarcate the c_centre value from the exp
-        crack = crack.replace("*exp"," exp")
-        # Demarcate the 'if' parts
-        crack = crack.replace("*if"," if")
+        # Number of separate equations = no. of cracks
+        n_cracks = len(CFs)
         
-        # Extract c at centre, crack half width and crack angle
-        f = crack_c_extract(crack)
-        g = crack_hw_extract(crack,cv,cw)
-        h = crack_angle_extract(crack)
+        for crack in CFs:
+            
+            # Demarcate the c_centre value from the exp
+            crack = crack.replace("*exp"," exp")
+            # Demarcate the 'if' parts
+            crack = crack.replace("*if"," if")
+            
+            # Extract c at centre, crack half width and crack angle
+            f = crack_c_extract(crack)
+            g = crack_hw_extract(crack,cv,cw)
+            h = crack_angle_extract(crack)
+            
+            # Append it to the appropriate lists
+            crack_c.append(f)
+            crack_hw.append(g)
+            crack_angle_deg.append(h)
+    # Till this point block put inside if statement by Akshay Dandekar
         
-        # Append it to the appropriate lists
-        crack_c.append(f)
-        crack_hw.append(g)
-        crack_angle_deg.append(h)
-    
     return n_cracks,crack_c,crack_hw,crack_angle_deg
 
 def BC_extract(bc):
@@ -300,26 +311,37 @@ def crack_hw_extract(i,cv,cw):
             # return the numerical value (stored in cw) corresponding to the half-width parameter found
             return cw[j]
 
+# Function to extract the crack half-width
 def crack_angle_extract(i):
     
+    # initialize the index to 'e' in the crack equation, depending on
+    # if the equation includes a c value before the 'exp'
     if i[0] == 'e':
         index = 0
     else:
         index = 1
     
     t = i.split(" ")
+    
+    # Find the string grouping before the angle value for a crack oriented in
+    # a general direction in the x-y plane
     if 'abs(y-tan' in t[index]:
         y = ((t[index].replace("abs(y-tan("," ")).replace("*pi"," pi")).split(" ")
         return float(y[1])
-                
+    
+    # Case where crack is parallel to y-axis            
     elif 'abs(x' in t[index]:
         return 90.00
+    
+    # Case where crack is parallel to x-axis
     else:
         return 0.00
-        
-        
-           
-mp,cw,cv,cf,bc = read_input_file("samplefile.i")  
+
+#**********************************************************************#
+#                         Test Block                                   #
+#**********************************************************************#
+              
+mp,cw,cv,cf,bc = read_input_file("sample_file.i")  
 
 # Output is numbers
 gc,E,nu,rho = extract_mat_properties(mp)
