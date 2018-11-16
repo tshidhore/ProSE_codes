@@ -18,6 +18,8 @@ def read_input_file(filename):
   crack_hwidths = [] # Stores crack half-widths for eac crack
   crack_vars = [] # Stores the variables used to denote each crack
   crack_funs = [] # Stores crack functions for each crack
+  bc_funs = [None]*4 # Stores BC functions at the following indices:
+                     # left=0, right=1,top=2, bottom=3
   i = 0 # Counter for line number
   
   reading_lines = True
@@ -43,20 +45,20 @@ def read_input_file(filename):
             if 'gc' in line:
                 mat_prop.append(line)
             # Finding Young's modulus
-            elif 'youngs_modulus' in line:
+            if 'youngs_modulus' in line:
                 mat_prop.append(line)
-            # Finding YoPoisson ratio
-            elif 'poissons_ratio' in line:
+            # Finding Poisson ratio
+            if 'poissons_ratio' in line:
                 mat_prop.append(line)
             # Finding density
-            elif 'prop_names = density' in line:
+            if 'prop_names = density' in line:
                 flag_d = True
                 continue
-            elif flag_d:
+            if flag_d:
                 mat_prop.append("density"+ line.strip("prop"))
                 flag_d = False
             # Checking end of materials block
-            elif '[]' in line:
+            if '[]' in line:
                 read_materials = False
                 print("Line %d:Done reading material properties"%(i))     
 
@@ -65,26 +67,93 @@ def read_input_file(filename):
     #**********************************************************************#                
                            
     if '[Functions]' in line:
-        print("Line %d:Reading crack properties"%(i))
-        read_function = True
-        while read_function:
+        print("Line %d:Reading functions block"%(i))
+        read_functions = True
+        while read_functions:
             line = f.readline().strip()
             i += 1
             # Checking end of functions block
+            
             if '[]' in line:
-                read_function = False
-                print("Line %d:Done reading crack properties"%(i))
-            # Finding half-width parameters
-            # Strips the ' s at the start and end and stores it in the relevant list
-            elif 'vals' in line:
-                crack_hwidths = ((line.strip("vals = ")).strip("'")).split(" ")
-            # Finding corresponding parameters values
-            elif 'vars' in line:
-                crack_vars = ((line.strip("vars = ")).strip("'")).split(" ")
-            # Extracting all crack functions
-            elif 'value' in line:
-                temp = line.replace("value = 'min(","")
-                crack_funs.append(temp.replace(",1)'",""))
+                read_functions = False
+                print("Line %d:Done reading functions block"%(i))
+            
+            if '[./initial_crack]' in line:
+                print("Line %d:Reading crack properties"%(i))
+                read_crack_function = True
+                while read_crack_function:
+                    line = f.readline().strip()
+                    i += 1
+                    if '[../]' in line:
+                        read_crack_function = False
+                        print("Line %d:Done reading crack properties"%(i))
+                    # Finding half-width parameters
+                    # Strips the ' s at the start and end and stores it in the relevant list
+                    if 'vals' in line:
+                        crack_hwidths = ((line.strip("vals = ")).strip("'")).split(" ")
+                    # Finding corresponding parameters values
+                    if 'vars' in line:
+                        crack_vars = ((line.strip("vars = ")).strip("'")).split(" ")
+                    # Extracting all crack functions
+                    if 'value' in line:
+                        temp = line.replace("value = 'min(","")
+                        crack_funs.append(temp.replace(",1)'",""))
+            
+            # Checks if function definitions for BCs are defined           
+            if 'loading' in line:
+                
+                # Checks for each boundary and extracts the loading function in bc_funs 
+                if 'right' in line:
+                    print("Line %d:Reading right boundary loading function"%(i))
+                    read_r_load_bc = True
+                    while read_r_load_bc:
+                        line = f.readline().strip()
+                        i += 1
+                        if '[../]' in line:
+                            read_r_load_bc = False
+                            print("Line %d:Done reading right boundary loading function"%(i))
+                        if 'value' in line:
+                            r_bc_l_v = (line.replace("value = '","")).replace("'","")
+                            bc_funs[1] = r_bc_l_v
+                            
+                if 'left' in line:
+                    print("Line %d:Reading left boundary loading function"%(i))
+                    read_l_load_bc = True
+                    while read_l_load_bc:
+                        line = f.readline().strip()
+                        i += 1
+                        if '[../]' in line:
+                            read_l_load_bc = False
+                            print("Line %d:Done reading left boundary loading function"%(i))
+                        if 'value' in line:
+                            l_bc_l_v = (line.replace("value = '","")).replace("'","")
+                            bc_funs[0] = l_bc_l_v
+                            
+                if 'top' in line:
+                    print("Line %d:Reading top boundary loading function"%(i))
+                    read_t_load_bc = True
+                    while read_t_load_bc:
+                        line = f.readline().strip()
+                        i += 1
+                        if '[../]' in line:
+                            read_t_load_bc = False
+                            print("Line %d:Done reading top boundary loading function"%(i))
+                        if 'value' in line:
+                            t_bc_l_v = (line.replace("value = '","")).replace("'","")
+                            bc_funs[2] = t_bc_l_v
+                            
+                if 'bottom' in line:
+                    print("Line %d:Reading bottom boundary loading function"%(i))
+                    read_l_load_bc = True
+                    while read_l_load_bc:
+                        line = f.readline().strip()
+                        i += 1
+                        if '[../]' in line:
+                            read_l_load_bc = False
+                            print("Line %d:Done reading bottom boundary loading function"%(i))
+                        if 'value' in line:
+                            b_bc_l_v = (line.replace("value = '","")).replace("'","")
+                            bc_funs[3] = b_bc_l_v
                 
     #**********************************************************************#
     #                      READING BOUNDARY CONDITIONS                     #
@@ -104,7 +173,7 @@ def read_input_file(filename):
                 print("Line %d:Done reading BCs"%(i))
             
             # Executed at the start of one BC sub-block
-            elif '[./' in line:
+            if '[./' in line:
                 continue
             
             # Executed at the end of one BC sub-block. 
@@ -129,11 +198,11 @@ def read_input_file(filename):
     #                         CHECKING END OF FILE                         #
     #**********************************************************************#
                             
-    elif '[Outputs]' in line:
+    if '[Outputs]' in line:
       reading_lines = False
       print("Line %d:End of file"%(i))
 
-  return mat_prop,crack_hwidths,crack_vars,crack_funs,BC
+  return mat_prop,crack_hwidths,crack_vars,crack_funs,BC,bc_funs
 
 #**********************************************************************#
 #                     EXTRACTING NUMERICAL VALUES                      #
@@ -150,7 +219,7 @@ def extract_mat_properties(mat_prop):
                 except ValueError:
                     pass
                     
-        elif 'youngs_modulus' in string:
+        if 'youngs_modulus' in string:
             E = 0.
             for t in string.split():
                 try:
@@ -158,7 +227,7 @@ def extract_mat_properties(mat_prop):
                 except ValueError:
                     pass
                     
-        elif 'poissons_ratio' in string:
+        if 'poissons_ratio' in string:
             nu = 0.
             for t in string.split():
                 try:
@@ -166,7 +235,7 @@ def extract_mat_properties(mat_prop):
                 except ValueError:
                     pass
         
-        elif 'density_values' in string:
+        if 'density_values' in string:
             rho = 0.
             for t in string.split():
                 try:
@@ -227,7 +296,7 @@ def extract_crack_params(cf,cv,cw):
         
     return n_cracks,crack_c,crack_hw,crack_angle_deg
 
-def BC_extract(bc):
+def BC_extract(bc,bc_funs):
     left = []
     right = []
     top = []
@@ -244,32 +313,38 @@ def BC_extract(bc):
             if "boundary" in x:
                 index = i        
         # Store the relevant information in BC_kind in the corresponding list
-        # 2nd argument to extract_BC_info() ensures that everythong in BC_kind except "boundary = ..." is passed     
+        # 2nd argument to extract_BC_info() ensures that everythong in BC_kind except "boundary = ..." is passed 
+        # 3rd argument to extract_BC_info() passes the relevant parsed function"    
         if "left" in BC_kind[index] or "0" in BC_kind[index]:
-            extract_BC_info(left,[p for j,p in enumerate(BC_kind) if j != index])
-        elif "bottom" in BC_kind[index] or "1" in BC_kind[index]:
-            extract_BC_info(bottom,[p for j,p in enumerate(BC_kind) if j != index])
-        elif "right" in BC_kind[index] or "2" in BC_kind[index]:
-            extract_BC_info(right,[p for j,p in enumerate(BC_kind) if j != index])
-        elif "top" in BC_kind[index] or "3" in BC_kind[index]:
-            extract_BC_info(top,[p for j,p in enumerate(BC_kind) if j != index])
+            extract_BC_info(left,[p for j,p in enumerate(BC_kind) if j != index],bc_funs[0])
+        if "bottom" in BC_kind[index] or "1" in BC_kind[index]:
+            extract_BC_info(bottom,[p for j,p in enumerate(BC_kind) if j != index],bc_funs[3])
+        if "right" in BC_kind[index] or "2" in BC_kind[index]:
+            extract_BC_info(right,[p for j,p in enumerate(BC_kind) if j != index],bc_funs[1])
+        if "top" in BC_kind[index] or "3" in BC_kind[index]:
+            extract_BC_info(top,[p for j,p in enumerate(BC_kind) if j != index],bc_funs[2])
     
     # Append "Free" if no BCs found for a particular side        
     if left == []:
         left.append("Free")
-    elif right == []:
+    if right == []:
         right.append("Free")
-    elif top == []:
+    if top == []:
         top.append("Free")
-    elif bottom == []:
+    if bottom == []:
         bottom.append("Free")
 
     return left,right,top,bottom
 
 # Function to append the information in BC_kind to the list for a specific side
-def extract_BC_info(side,u):
+def extract_BC_info(side,u,bc_fun):
     
     for x in u:
+        
+        # Checkes if a parsed function is used and redefines x
+        if "function" in x:
+            x = "function = " + str(bc_fun) 
+            
         side.append(x)
 
 # Function to extract the c value at crack centre    
@@ -340,12 +415,23 @@ def crack_angle_extract(i):
 #**********************************************************************#
 #                         Test Block                                   #
 #**********************************************************************#
-              
-mp,cw,cv,cf,bc = read_input_file("sample_file.i")  
+"""         
+mp1,cw1,cv1,cf1,bc1 = read_input_file("ncve1d1gc1.i")  
 
 # Output is numbers
-gc,E,nu,rho = extract_mat_properties(mp)
+gc1,E1,nu1,rho1 = extract_mat_properties(mp1)
 
-n_cracks,crack_c,crack_hw,crack_angle_deg = extract_crack_params(cf,cv,cw)
+n_cracks1,crack_c1,crack_hw1,crack_angle_deg1 = extract_crack_params(cf1,cv1,cw1)
 
-left,right,top,bottom = BC_extract(bc)
+left1,right1,top1,bottom1 = BC_extract(bc1)
+"""
+
+mp2,cw2,cv2,cf2,bc2,bc_funs2 = read_input_file("che1d1gc1.i")  
+
+# Output is numbers
+gc2,E2,nu2,rho2 = extract_mat_properties(mp2)
+
+n_cracks2,crack_c2,crack_hw2,crack_angle_deg2 = extract_crack_params(cf2,cv2,cw2)
+
+left2,right2,top2,bottom2 = BC_extract(bc2,bc_funs2)
+
