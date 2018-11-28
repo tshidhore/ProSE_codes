@@ -2,12 +2,16 @@
 
 # Header file to read the MOOSE input (<filename.i>) file
 # All outputs are either lists or list of lists
+# Note: Relative paths wont work unless working directory is code directory
 
 import os
 import sys
 #import numpy as np 
 #import scipy as sp 
 from pdb import set_trace as keyboard
+
+# Switch for the test block
+test_flag = False
 
 def read_input_file(filename):
   
@@ -415,23 +419,16 @@ def crack_angle_extract(i):
 #**********************************************************************#
 #                         Test Block                                   #
 #**********************************************************************#
-"""         
-mp1,cw1,cv1,cf1,bc1 = read_input_file("ncve1d1gc1.i")  
-
-# Output is numbers
-gc1,E1,nu1,rho1 = extract_mat_properties(mp1)
-
-n_cracks1,crack_c1,crack_hw1,crack_angle_deg1 = extract_crack_params(cf1,cv1,cw1)
-
-left1,right1,top1,bottom1 = BC_extract(bc1)
-"""
-
-mp2,cw2,cv2,cf2,bc2,bc_funs2 = read_input_file("che1d1gc1.i")  
-
-# Output is numbers
-gc2,E2,nu2,rho2 = extract_mat_properties(mp2)
-
-n_cracks2,crack_c2,crack_hw2,crack_angle_deg2 = extract_crack_params(cf2,cv2,cw2)
-
-left2,right2,top2,bottom2 = BC_extract(bc2,bc_funs2)
+if test_flag:
+    
+    folder = './test/'
+    filename = folder + 'ncve1d1gc1.i'       
+    mp,cw,cv,cf,bc, bc_funs = read_input_file(filename)  
+    
+    # Output is numbers
+    gc,E,nu,rho = extract_mat_properties(mp)
+    
+    n_cracks,crack_c,crack_hw,crack_angle_deg = extract_crack_params(cf,cv,cw)
+    
+    left,right,top,bottom = BC_extract(bc,bc_funs)
 
