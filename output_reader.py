@@ -17,7 +17,7 @@ from pdb import set_trace as keyboard
 import pandas as pd
 
 # Switch for the test block
-test_flag = True
+test_flag = False
 
 def stress_state(stressxxmax,stressxxmin,stressxymax,stressxymin,stressyymax,stressyymin):
     stressxx = np.zeros(stressxxmax.shape)
@@ -41,7 +41,6 @@ def stress_state(stressxxmax,stressxxmin,stressxymax,stressxymin,stressyymax,str
 def stress_rotation(stressxx,stressxy,stressyy):
     theta = np.pi/6
     sigmaxx = np.zeros(stressxx.shape)
-    sigmaxy = np.zeros(stressxy.shape)
     sigmayy = np.zeros(stressyy.shape)
     for i in range(len(sigmaxx)):
         sigmaxx[i] = (stressxx[i]+stressyy[i])/2 + (stressxx[i]-stressyy[i])*np.cos(2*theta)/2 + stressxy[i]*np.sin(2*theta)
@@ -53,6 +52,17 @@ def derivative(y,t):
     dydt = diff(y)/dt
     return dydt
     
+def find_max(cdot,psidot,sigmaxx,sigmayy):
+    cdot_max=0
+    for i,elem in enumerate(cdot):
+        if abs(elem)>cdot_max:
+            cdot_max = elem
+            max_index = i
+    psidot_max = psidot[max_index]
+    sigmaxx_max = sigmaxx[max_index]
+    sigmayy_max = sigmayy[max_index]
+    return cdot_max,max_index,psidot_max,sigmaxx_max,sigmayy_max
+
 def read_output_file(filename):
     
     # Reads csv file <filename>
@@ -78,7 +88,9 @@ def read_output_file(filename):
     cdot = derivative(c,t)
     psidot = derivative(psiposmax,t)
     
-    return c,t,psiposmax,cdot,psidot
+    cdot_max,max_index,psidot_max,sigmaxx_max,sigmayy_max = find_max(cdot,psidot,sigmaxx,sigmayy)
+    
+    return c,t,psiposmax,cdot_max,max_index,psidot_max,sigmaxx_max,sigmayy_max
   
 #**********************************************************************#
 #                         Test Block                                   #
@@ -87,4 +99,4 @@ def read_output_file(filename):
 if test_flag:
     folder = './test/'
     filename = folder + 'ncve1d1gc1_out.csv'
-    c1,t1,psiposmax1,cdot1,psidot1 = read_output_file(filename)
+    c1,t1,psiposmax1,cdot_max1,max_index1,psidot_max1,sigmaxx_max1,sigmayy_max1 = read_output_file(filename)
