@@ -11,7 +11,7 @@ import sys
 from pdb import set_trace as keyboard
 
 # Switch for the test block
-test_flag = True
+test_flag = False
 
 def read_input_file(filename):
   
