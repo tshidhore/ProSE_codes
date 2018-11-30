@@ -11,7 +11,7 @@ import sys
 from pdb import set_trace as keyboard
 
 # Switch for the test block
-test_flag = False
+test_flag = True
 
 def read_input_file(filename):
   
@@ -278,7 +278,16 @@ def extract_crack_params(cf,cv,cw):
         CFs = CFs.split(" ")
         
         # Number of separate equations = no. of cracks
-        n_cracks = len(CFs)
+        
+        #n_cracks = len(CFs)
+        
+        #****************************#
+        # Edited by Akshay B - 11/28/18
+        if 'if(max(10' in cf[0]:
+            n_cracks = 0
+        else:
+            n_cracks = 1
+        #****************************#
         
         for crack in CFs:
             
