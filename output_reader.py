@@ -54,7 +54,7 @@ def derivative(y,t):
     
 def find_max(cdot,psidot,sigmaxx,sigmayy):
     cdot_max=0
-    for i,elem in enumerate(cdot):
+    for i,elem in enumerate(cdot[5:]):
         if abs(elem)>cdot_max:
             cdot_max = elem
             max_index = i
@@ -85,7 +85,8 @@ def read_output_file(filename):
     stressxx,stressxy,stressyy = stress_state(stressxxmax,stressxxmin,stressxymax,stressxymin,stressyymax,stressyymin)
     sigmaxx,sigmayy = stress_rotation(stressxx,stressxy,stressyy)
     
-    cdot = derivative(c,t)
+    # Modification by Tanmay C. Shidhore
+    cdot = derivative(c,t) # Computes the derivative for values beyond the 6th time step
     psidot = derivative(psiposmax,t)
     
     cdot_max,max_index,psidot_max,sigmaxx_max,sigmayy_max = find_max(cdot,psidot,sigmaxx,sigmayy)
