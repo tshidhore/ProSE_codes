@@ -16,7 +16,6 @@ from sklearn.datasets import make_classification
 test_flag = False
 """
 # Function to validate the SVC model against separately generated training data
-
 def Validate_SVC():
     
     #**********************************************************************#
@@ -75,11 +74,26 @@ def Validate_SVC():
                     for l in left:       
                         if 'ux' in l:
                             load = 2    # horizontal load
-                            
-                    arr_in = [gc,E,rho,n_cracks,load]
-                    input_arr.append(arr_in)
-                        
-                    arr_in = [gc,E,rho,n_cracks,load]
+                    if gc == 0.001:
+                        gc_t = 0
+                    elif gc == 0.2:
+                        gc_t = 1
+                    else:
+                        gc_t = 2
+                    if E == 0.0005:
+                        E_t = 0
+                    elif E == 0.05:
+                        E_t = 1
+                    else:
+                        E_t = 2
+                    if rho == 0.8:
+                        rho_t = 0
+                    elif rho == 1.4:
+                        rho_t = 1
+                    else:
+                        rho_t = 2  
+                          
+                    arr_in = [gc_t,E_t,rho_t,n_cracks,load]
                     input_arr.append(arr_in)
     
                     filename_o = to_folder + pref + "e" + str(i) + "d" + str(j) + "gc" + str(k) + "_out.csv"
@@ -331,8 +345,25 @@ def Validate_SVC(search_word):
         for l in left:       
             if 'ux' in l:
                 load = 2    # horizontal load
-        
-        arr_in = [gc,E,rho,n_cracks,load]
+        if gc == 0.001:
+            gc_t = 0
+        elif gc == 0.2:
+            gc_t = 1
+        else:
+            gc_t = 2
+        if E == 0.0005:
+            E_t = 0
+        elif E == 0.05:
+            E_t = 1
+        else:
+            E_t = 2
+        if rho == 0.8:
+            rho_t = 0
+        elif rho == 1.4:
+            rho_t = 1
+        else:
+            rho_t = 2
+        arr_in = [gc_t,E_t,rho_t,n_cracks,load]
         input_arr.append(arr_in)
     
         c,t,psiposmax,cdot_max,max_index,psidot_max,sigmaxx_max,sigmayy_max = output_reader.read_output_file(ofile_not_read[i])
@@ -420,14 +451,31 @@ if test_flag:
                     # Author: Akshay Biniwale
                     # The numeric values of the material properties are converted
                     # to integers for simplicity.
-                    
+                    if gc == 0.001:
+                        gc_t = 0
+                    elif gc == 0.2:
+                        gc_t = 1
+                    else:
+                        gc_t = 2
+                    if E == 0.0005:
+                        E_t = 0
+                    elif E == 0.05:
+                        E_t = 1
+                    else:
+                        E_t = 2
+                    if rho == 0.8:
+                        rho_t = 0
+                    elif rho == 1.4:
+                        rho_t = 1
+                    else:
+                        rho_t = 2
                     if 'v' in pref:
                         load = 1    # vertical load
                     elif 'h' in pref:
                         load = 2    # horizontal load
                     elif 's' in pref:
                         load = 0    # shear load
-                    arr_in = [gc,E,rho,n_cracks,load]
+                    arr_in = [gc_t,E_t,rho_t,n_cracks,load]
                     input_arr.append(arr_in)
     
                     filename_o = to_folder + pref + "e" + str(i) + "d" + str(j) + "gc" + str(k) + "_out.csv"
@@ -502,5 +550,4 @@ p6 = Validate_SVC("d3")
 # Test for missing interpolated values
 p7 = Validate_SVC("gc2")
 p8 = Validate_SVC("gc2")
-p9 = Validate_SVC("d2")   
-           
+p9 = Validate_SVC("d2") 
