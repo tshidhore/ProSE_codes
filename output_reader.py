@@ -54,7 +54,7 @@ def derivative(y,t):
     
 def find_max(cdot,psidot,sigmaxx,sigmayy):
     cdot_max=0
-    for i,elem in enumerate(cdot[5:]):
+    for i,elem in enumerate(cdot[3:]):
         if abs(elem)>cdot_max:
             cdot_max = elem
             max_index = i
@@ -99,5 +99,5 @@ def read_output_file(filename):
 
 if test_flag:
     folder = './test/'
-    filename = folder + 'ncve1d1gc1_out.csv'
+    filename = folder + 'che3d1gc1_out.csv'
     c1,t1,psiposmax1,cdot_max1,max_index1,psidot_max1,sigmaxx_max1,sigmayy_max1 = read_output_file(filename)
