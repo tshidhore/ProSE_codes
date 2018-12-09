@@ -163,7 +163,7 @@ def Test_ANN(ti_folder,to_folder,search_word,labels=False):
     print ("The accuracy of the ANN model excluding the cases for " + search_word + " is %f" %(p_accuracy))
     return p_accuracy
 
-def Sample_ANN(ti_folder,to_folder,vi_folder,vo_folder):
+def Sample_ANN(ti_folder,to_folder,vi_folder,vo_folder,labels=False):
     
     search_word = "None"
     labels=False
@@ -245,5 +245,6 @@ p8l = Test_ANN(ti_folder,to_folder,"gc2",True)
 p9l = Test_ANN(ti_folder,to_folder,"d2",True)
 
 P = Sample_ANN(ti_folder,to_folder,vi_folder,vo_folder)
+Pl = Sample_ANN(ti_folder,to_folder,vi_folder,vo_folder,True)
 
-print(p1,p1l,p2,p2l,p3,p3l,p4,p4l,p5,p5l,p6,p6l,p7,p7l,p8,p8l,p9,p9l,P)
+print(p1,p1l,p2,p2l,p3,p3l,p4,p4l,p5,p5l,p6,p6l,p7,p7l,p8,p8l,p9,p9l,P,Pl)
