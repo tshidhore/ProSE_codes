@@ -214,7 +214,10 @@ def Sample_SVC(ti_folder,to_folder,vi_folder,vo_folder):
                                                                                                                                                                                     
 # Test for sensitivity to extrapolated values
 ti_folder = "./t_input_files/"
-to_folder = "./t_output_files/"                                                    
+to_folder = "./t_output_files/"
+vi_folder = "./v_input_files/"
+vo_folder = "./v_output_files/"
+                                                    
 p1 = Test_SVC(ti_folder,to_folder,"e1")
 p2 = Test_SVC(ti_folder,to_folder,"gc1")
 p3 = Test_SVC(ti_folder,to_folder,"d1")
@@ -238,4 +241,9 @@ p6l = Test_SVC(ti_folder,to_folder,"d3",True)
 # Test for missing interpolated values
 p7l = Test_SVC(ti_folder,to_folder,"e2",True)
 p8l = Test_SVC(ti_folder,to_folder,"gc2",True)
-p9l = Test_SVC(ti_folder,to_folder,"d2",True) 
+p9l = Test_SVC(ti_folder,to_folder,"d2",True)
+
+# Validation data
+P = Sample_SVC(ti_folder,to_folder,vi_folder,vo_folder)
+
+print(p1,p1l,p2,p2l,p3,p3l,p4,p4l,p5,p5l,p6,p6l,p7,p7l,p8,p8l,p9,p9l,P) 
